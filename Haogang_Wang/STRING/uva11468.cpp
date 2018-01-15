@@ -47,26 +47,28 @@ inline void out(T x) {
     x=x%10;
     putchar('0'+x);
 }
-const int MAXNODE=11000;
-const int SIGMA_SIZE=30;
-int n;
-char s[155][75],T[1000005];
+const int MAXNODE=1000;
+const int SIGMA_SIZE=80;
+int n,K,cnt;
+char v[110],s[22][22];
+double p[110];
+int idc[130];
+double dp[MAXNODE][105];
+bool vis[MAXNODE][105];
 struct AhoCorasickAutomata {
     int ch[MAXNODE][SIGMA_SIZE];
     int f[MAXNODE];    // fail函数
-    int val[MAXNODE];  // 每个字符串的结尾结点都有一个非0的val
-    int last[MAXNODE]; // 输出链表的下一个结点
-    int cnt[155];
+    bool match[MAXNODE];    // match[i]表示结点i是否为单词结点
     int sz;
     void init() {
         sz = 1;
         memset(ch[0], 0, sizeof(ch[0]));
-        memset(cnt, 0, sizeof(cnt));
     }
 
     // 字符c的编号
     int idx(char c) {
-        return c-'a';
+        if(!idc[c]) idc[c]=++cnt;
+        return idc[c];
     }
 
     // 插入字符串。v必须非0
@@ -76,12 +78,12 @@ struct AhoCorasickAutomata {
             int c = idx(s[i]);
             if(!ch[u][c]) {
                 memset(ch[sz], 0, sizeof(ch[sz]));
-                val[sz] = 0;
+                match[sz] = false;
                 ch[u][c] = sz++;
             }
             u = ch[u][c];
         }
-        val[u] = v;
+        match[u] = true;
     }
 
     // 计算fail函数
@@ -91,73 +93,58 @@ struct AhoCorasickAutomata {
         // 初始化队列
         for(int c = 0; c < SIGMA_SIZE; c++) {
             int u = ch[0][c];
-            if(u) { f[u] = 0; q.push(u); last[u]=0;}
+            if(u) { f[u] = 0; q.push(u); }
         }
         // 按BFS顺序计算fail
         while(!q.empty()) {
             int r = q.front(); q.pop();
             for(int c = 0; c < SIGMA_SIZE; c++) {
                 int u = ch[r][c];
-                if(!u) continue;
+                if(!u) { ch[r][c]=ch[f[r]][c];continue;}   // 没有last数组，直接连接
                 q.push(u);
                 int v = f[r];
                 while(v && !ch[v][c]) v = f[v];
                 f[u] = ch[v][c];
-                last[u] = val[f[u]] ? f[u] : last[f[u]];
+                match[u]|=match[f[u]];
             }
         }
     }
 
-    void find(char *T) {
-        int len = (int)strlen(T);
-        int j=0;
-        for (int i = 0; i < len; ++i) {
-            int c= idx(T[i]);
-            while(j&&!ch[j][c]) j=f[j];
-            j=ch[j][c];
-            if(val[j]) print(j);
-            else if(last[j]) print(last[j]);
+    double getProb(int u,int L) {
+        if(!L) return 1;
+        if(vis[u][L]) return dp[u][L];
+        vis[u][L]=true;
+        double &ans=dp[u][L];
+        ans=0;
+        for (int i = 1; i <= n; ++i) {
+            if(!match[ch[u][i]]) ans += p[i]*getProb(ch[u][i], L-1);
         }
-    }
-
-    void print(int j){
-        if(j) {
-            cnt[val[j]]++;   // 由输出改为计数
-            print(last[j]);
-        }
+        return ans;
     }
 
 }ac;
 int main() {
-//    freopen("/Users/wanghaogang/Public/AppCodeProjects/ACPP/ACPP/in.txt", "r", stdin);
-//    freopen("/Users/wanghaogang/Public/AppCodeProjects/ACPP/ACPP/out.txt", "w", stdout);
-    while (true) {
+    int T,L;
+    read(T);
+    FOR(cas, 1, T) {
         ac.init();
+        read(K);
+        FOR(j, 1, K) scanf("%s",s[j]);
         read(n);
-        if(!n) break;
+        cnt=n;
+        memset(idc, 0, sizeof(idc));
+        memset(vis,false, sizeof(vis));
         FOR(j, 1, n) {
-            scanf("%s",s[j]);
+            scanf("%s %lf",str,p+j);
+            v[j]=str[0];
+            idc[str[0]]=j;
+        }
+        read(L);
+        FOR(j, 1, K) {
             ac.insert(s[j], j);
         }
         ac.getFail();
-        scanf("%s",T);
-        ac.find(T);
-        vector<int> ans;
-        int maxc=0;
-        FOR(j, 1, n) {
-            if(ac.cnt[j]>maxc) {
-                maxc=ac.cnt[j];
-                ans.clear();
-                ans.push_back(j);
-            } else if(ac.cnt[j]==maxc) {
-                ans.push_back(j);
-            }
-        }
-        out(maxc);
-        putchar('\n');
-        for (int i = 0; i < ans.size(); ++i) {
-            printf("%s\n",s[ans[i]]);
-        }
+        printf("Case #%d: %.6f\n",cas,ac.getProb(0, L));
     }
     return 0;
 }

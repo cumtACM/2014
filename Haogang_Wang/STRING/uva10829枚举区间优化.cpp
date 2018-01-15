@@ -1,33 +1,51 @@
-// 后缀数组 HDU6194
-// 题意：给出一个字符串，问其中出现k次的子串的个数有多少个*/
-/*************************************************************************
-    按序枚举每一个 sa[i] ，显然有效子串的下界为
-    max(0,heighti,heighti+k) 。上界为 min(height[i+1,i+k−1])
-     （当 k=1 时，上界为 sa[i] 的长度）。在串长在上下界之间的所有
-     sa[i] 的前缀子串都对答案贡献为 1 。
- ************************************************************************/
-#include <bits/stdc++.h>
+/*
+求UVU(|V|=g)形式的子字符串的个数。
+枚举区间优化：当第一个U的长度为L时，它必定覆盖且只覆盖[0,L,L*2,L*3,……]之一。那么
+就看它覆盖k*L时可以向前取几位（反字符串求公共后缀），向后取几位，加起来-1就是覆盖这个点情况下的最长
+U，答案加上它-1。
+*/
+#include <iostream>
+#include <cstdio>
+#include <cstring>
+#include <algorithm>
+
+#define FOR(i,a,b) for(int i=(a);i<=(b);i++)
+#define IFOR(i,a,b) for(int i=(a);i>=(b);i--)
+
 using namespace std;
+
 typedef long long lolo;
 typedef pair<int, int> pii;
+typedef unsigned long long ulolo;
 
 const int maxn = 100005;
+const int maxm = 200005;
 const int INF = 0x3f3f3f3f;
 const lolo inf = 0x3f3f3f3f3f3f3f3f;
-const int MOD = 1e9+7;
+const double eps = 1e-8;
+const int MOD = 1000000007;
 
-inline void read(int &x) {
-    x=0;
-    char c;
-    do {
-        c= getchar();
-    } while (c<'0'||c>'9');
-    do {
-        x = x*10+c-'0';
-        c= getchar();
-    } while (c>='0'&&c<='9');
+template<class T>
+inline void read(T &x) {
+    x = 0; T flag = 1;char c;
+    do { c = (char) getchar(); if (c == '-') break; } while (c < '0' || c > '9');
+    if (c == '-') c = '0', flag = -1;
+    do { x = x * 10 + c - '0';c = (char) getchar();} while (c >= '0' && c <= '9');
+    x *= flag;
 }
-
+char str[1100];
+string scf() {
+    scanf("%s",str);
+    return str;
+}
+template<class T>
+inline void out(T x) {
+    if(x>9) out(x/10);
+    x=x%10;
+    putchar('0'+x);
+}
+int g,len;
+char s[maxn];
 int Log2[maxn];
 void init() {
     for(int i=2;i<maxn;i++) Log2[i]=Log2[i>>1]+1;
@@ -41,9 +59,20 @@ struct SuffixArray {
     int t[maxn], t2[maxn], c[maxn]; // 辅助数组
     int n; // 字符个数
 
-    void clear() { n = 0; memset(sa, 0, sizeof(sa)); memset(s, 0, sizeof(s));}
+    void clear() { n = 0; memset(t, 0, sizeof(t)); memset(t2, 0, sizeof(t2));}
+    void init(char *str,int len) {
+        for (int i = 0; i < len; ++i) {
+            s[n++]=str[i]-'a'+1;
+        }
+        s[n++]=27;
+        // 方便求公共前缀
+        IFOR(j, len-1, 0) {
+            s[n++]=str[j]-'a'+1;
+        }
+        s[n++]=0;
+    }
 
-    // m为最大字符值加1。调用之前需设置好s和n
+    // m为最大字符值加1。调用之前需设置好s和nt
     void build_sa(int m) {
         int i, *x = t, *y = t2;
         for(i = 0; i < m; i++) c[i] = 0;
@@ -89,42 +118,39 @@ struct SuffixArray {
         return min(h[L][k], h[R-(1<<k)+1][k]);
     }
     int LCP(int x, int y){
-        if(x>=n-1||y>=n-1) return 0;
+        if(y>=n-1||x>=n-1) return 0;
         x = Rank[x]; y = Rank[y];
         if(x > y) swap(x, y);
-        return RMQ(x+1,y+1);
+        return RMQ(x+1,y);
     }
-    lolo solve(int k) {
-        lolo ans=0;
-        int len1,len2;
-        for(int i=1;i<=n-k+1;i++) {
-            len1=k==1?n-sa[i]:RMQ(i+1,i+k-1);
-            len2=0;
-            if(i!=1) len2=max(len2,height[i]);
-            if(i!=n-k+1) len2=max(len2,height[i+k]);
-            if(len1>len2) ans+=len1-len2;
+    int solve() {
+        int ans=0;
+        for (int U=1; (U<<1) + g <= len ; ++U) {      // 首先枚举U的长度
+            for (int i=0; i + g + U < len; i+=U) {    // 枚举覆盖的点
+                int j=i+U+g;
+                if(s[i]!=s[j]) continue;
+                int tmp=min(LCP(i, j),U)+ min(LCP(2*len-i, 2*len-j), U)-1;   
+                // 反字符串的公共后缀就是原串的公共前缀
+                if(tmp>=U) ans+=tmp-U+1;
+            }
         }
         return ans;
     }
-}a;
-char expr[maxn];
-int k;
+}sa;
 int main() {
     int T;
     init();
     read(T);
-    while(T--) {
-        a.clear();
-        read(k);
-        scanf("%s",expr);
-        a.n=(int)strlen(expr);
-        for(int i=0;i<=a.n;i++) a.s[i]=expr[i]-'a'+1; a.s[a.n++]=0;
-        a.build_sa(27);
-        a.build_height();
-        a.n--;
-        a.RMQ_init(a.n);
-        a.height[a.n+1]=0;
-        printf("%lld\n", a.solve(k));
+    FOR(cas, 1, T) {
+        read(g);
+        scanf("%s",s);
+        len=(int)strlen(s);
+        sa.clear();
+        sa.init(s, len);
+        sa.build_sa(28);
+        sa.build_height();
+        sa.RMQ_init(len<<1|1);
+        printf("Case %d: %d\n",cas,sa.solve());
     }
     return 0;
 }
