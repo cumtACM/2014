@@ -51,7 +51,7 @@ struct ShiftAnd {
 
         for(int i=0; i<tLen; i++){
             state = ((state<<1)|1) & s[t[i]];
-            if(state & 1<<(pLen-1))            //最高位出现零
+            if(state & 1<<(pLen-1))            //最高位出现1
                 return i - pLen + 1;
         }
         return -1;
@@ -71,7 +71,7 @@ struct ShiftAnd {
             state = state<<1;
             state.set(0);
             state = state & b[t[i]];
-            if(state[m-1])            //最高位出现零
+            if(state[m-1])            //最高位出现1
                 ans.push_back(i - m + 1);
         }
     }
