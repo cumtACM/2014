@@ -8,16 +8,13 @@ const int maxn=100005;
 char s[maxn];
 int n;
 // 最小表示法模版
-int get_min()
-{
+int get_min() {
     int i=0,j=1,k=0,t;
-    while(i<n&&j<n&&k<n)
-    {
+    while(i<n&&j<n&&k<n) {
         t=s[(j+k)%n]-s[(i+k)%n];
         if(!t)
             k++;
-        else
-        {
+        else {
             if(t>0)
                 j=j+k+1;
             else

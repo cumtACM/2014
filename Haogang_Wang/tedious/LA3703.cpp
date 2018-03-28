@@ -139,8 +139,6 @@ struct Trie {
 }trie;
 
 int main() {
-    freopen("/Users/wanghaogang/Public/AppCodeProjects/ACPP/ACPP/in.txt", "r", stdin);
-//    freopen("/Users/wanghaogang/Public/AppCodeProjects/ACPP/ACPP/out.txt", "w", stdout);
     int cas=1;
     while(scanf("%d",&n)!=EOF) {
         if(cas++>1) putchar('\n');
