@@ -109,7 +109,7 @@ int dfs(int now,int t,int maxf) {
 int maxflow(int s,int t) {
     int ret=0;
     while(makelevel(s,t)) {
-        ret+=dfs(s,t,inf);
+        ret+=dfs(s,t,INF);
     }
     return ret;
 }
