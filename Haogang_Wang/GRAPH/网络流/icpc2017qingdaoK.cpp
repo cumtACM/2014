@@ -85,7 +85,6 @@ struct MCMF {
 int c[maxn];
 string fr[maxn],to[maxn];
 int main() {
-//    freopen("../in.txt","r",stdin);
     int T,a,b;
     scanf("%d",&T);
     while(T--) {

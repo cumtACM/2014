@@ -3,20 +3,7 @@
 长度不同的边是互不冲突的，因为不可以彼此替换。将每个询问中长度相同的边分为一组，每次将一组
 完全加入，看是否冲突（形成环）。
 */
-#include <iostream>
-#include <cstdio>
-#include <sstream>
-#include <cstring>
-#include <algorithm>
-#include <vector>
-#include <queue>
-#include <cctype>
-#include <stack>
-#include <map>
-#include <unordered_map>
-#include <set>
-#include <ctime>
-#include <cmath>
+#include <bits/stdc++.h>
 
 #define FOR(i,a,b) for(int i=(a);i<=(b);i++)
 #define IFOR(i,a,b) for(int i=(a);i>=(b);i--)
