@@ -72,15 +72,12 @@ bool makelevel(int s,int t) {
     int FRONT=1,End=0;
     que[++End]=s;
     level[s]=1;
-    while(FRONT<=End)
-    {
+    while(FRONT<=End) {
         int u=que[FRONT++];
         if(u==t) return true;
-        for(int k=head[u];k!=-1;k=e[k].next)
-        {
+        for(int k=head[u];k!=-1;k=e[k].next) {
             int v=e[k].to;
-            if(!level[v]&&e[k].c)
-            {
+            if(!level[v]&&e[k].c) {
                 que[++End]=v;
                 level[v]=level[u]+1;
             }
